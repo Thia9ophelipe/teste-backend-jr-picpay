@@ -1,6 +1,5 @@
 package com.example.picpaysimplificado.entity;
 
-
 import jakarta.persistence.*;
 
 @Entity
@@ -37,21 +36,8 @@ public class TipoDeCarteira {
         this.descricao = descricao;
     }
 
-    public enum EnumTipoDeCarteira {
+    public TipoDeCarteira get() {
 
-        USUARIO(1L, "usuario"),
-        LOJISTA(2L, "lojista");
-
-        EnumTipoDeCarteira(long id, String descricao) {
-            this.id = id;
-            this.descricao = descricao;
-        }
-
-        private long id;
-        private String descricao;
-
-        public TipoDeCarteira get() {
-            return new TipoDeCarteira(id, descricao);
-        }
+        return new TipoDeCarteira(id, descricao);
     }
 }

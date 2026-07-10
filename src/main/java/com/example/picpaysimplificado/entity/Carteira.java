@@ -3,6 +3,7 @@ package com.example.picpaysimplificado.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Entity
 @Table(name = "tb_carteira")
@@ -32,6 +33,14 @@ public class Carteira {
     private TipoDeCarteira tipoDeCarteira;
 
     public Carteira() {
+    }
+
+    public Carteira(String nomeCompleto, String cpfCnpj, String email, String senha, TipoDeCarteira tipoDeCarteira) {
+        this.nomeCompleto = nomeCompleto;
+        this.cpfCnpj = cpfCnpj;
+        this.email = email;
+        this.senha = senha;
+        this.tipoDeCarteira = tipoDeCarteira;
     }
 
     public long getId() {
@@ -87,6 +96,19 @@ public class Carteira {
     }
 
     public void setTipoDeCarteira(TipoDeCarteira tipoDeCarteira) {
+
         this.tipoDeCarteira = tipoDeCarteira;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Carteira carteira = (Carteira) o;
+        return id == carteira.id && Objects.equals(nomeCompleto, carteira.nomeCompleto) && Objects.equals(cpfCnpj, carteira.cpfCnpj) && Objects.equals(email, carteira.email) && Objects.equals(senha, carteira.senha) && Objects.equals(saldo, carteira.saldo) && Objects.equals(tipoDeCarteira, carteira.tipoDeCarteira);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, nomeCompleto, cpfCnpj, email, senha, saldo, tipoDeCarteira);
     }
 }

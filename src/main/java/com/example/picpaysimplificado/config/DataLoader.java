@@ -1,6 +1,7 @@
 package com.example.picpaysimplificado.config;
 
 
+import com.example.picpaysimplificado.entity.EnumTipoDeCarteira;
 import com.example.picpaysimplificado.entity.TipoDeCarteira;
 import com.example.picpaysimplificado.repository.TipoDeCarteiraRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 public class DataLoader implements CommandLineRunner {
 
     private final TipoDeCarteiraRepository tipoDeCarteiraRepository;
+
     public DataLoader(TipoDeCarteiraRepository tipoDeCarteiraRepository) {
         this.tipoDeCarteiraRepository = tipoDeCarteiraRepository;
     }
@@ -19,7 +21,8 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        Arrays.stream(TipoDeCarteira.EnumTipoDeCarteira.values())
-                .forEach(tipoDeCarteira -> tipoDeCarteiraRepository.save(tipoDeCarteira.get()));
+        Arrays.stream(EnumTipoDeCarteira.values())
+                .forEach(tipoDeCarteira -> tipoDeCarteiraRepository
+                        .save(tipoDeCarteira.get()));
     }
 }

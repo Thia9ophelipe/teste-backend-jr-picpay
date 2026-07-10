@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class PicPaySimplificadoApplication {
 
     public static void main(String[] args) {
+
         SpringApplication.run(PicPaySimplificadoApplication.class, args);
     }
 
