@@ -14,10 +14,6 @@ public class TransacaoMapper {
 
     CarteiraRepository carteiraRepository;
 
-    public TransacaoMapper(CarteiraRepository carteiraRepository) {
-        this.carteiraRepository = carteiraRepository;
-    }
-
     public Transacao toEntity(TransacaoRequestDTO dto) {
 
         Carteira pagador = carteiraRepository.findById(dto.idPagador())
@@ -43,7 +39,6 @@ public class TransacaoMapper {
         Carteira recebedor = carteiraRepository.findById(transacao.getIdRecebedor().getId())
                 .orElseThrow();
 
-        return new TransacaoResponseDTO(
                 transacao.getValor(),
                 pagador,
                 recebedor,

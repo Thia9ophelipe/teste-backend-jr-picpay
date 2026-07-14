@@ -1,8 +1,7 @@
 package com.example.picpaysimplificado.entity;
 
-import jakarta.persistence.*;
 
-import java.util.Objects;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "tb_tipo_carteira")
@@ -38,20 +37,21 @@ public class TipoDeCarteira {
         this.descricao = descricao;
     }
 
-    public TipoDeCarteira get() {
+    public enum EnumTipoDeCarteira {
 
-        return new TipoDeCarteira(id, descricao);
-    }
+        USUARIO(1L, "usuario"),
+        LOJISTA(2L, "lojista");
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        TipoDeCarteira that = (TipoDeCarteira) o;
-        return id == that.id && Objects.equals(descricao, that.descricao);
-    }
+        EnumTipoDeCarteira(long id, String descricao) {
+            this.id = id;
+            this.descricao = descricao;
+        }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, descricao);
+        private long id;
+        private String descricao;
+
+        public TipoDeCarteira get() {
+            return new TipoDeCarteira(id, descricao);
+        }
     }
 }

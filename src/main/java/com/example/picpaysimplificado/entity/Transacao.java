@@ -1,7 +1,6 @@
 package com.example.picpaysimplificado.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -13,11 +12,9 @@ import java.util.UUID;
 public class Transacao {
 
     @Id
-    @GeneratedValue
     private UUID id;
 
     @Column(name = "valor")
-    @DecimalMin(value = "0.01")
     private BigDecimal valor;
 
     @ManyToOne
