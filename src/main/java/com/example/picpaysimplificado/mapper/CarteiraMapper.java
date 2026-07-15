@@ -22,13 +22,12 @@ public class CarteiraMapper {
         TipoDeCarteira tipoDeCarteira = tipoDeCarteiraRepository
                 .findById(dto.tipoDeCarteira().getId()).orElse(null);
 
-        Carteira carteira = new Carteira(
+        return new Carteira(
                 dto.nomeCompleto(),
                 dto.cpfCnpj(),
                 dto.email(),
                 dto.senha(),
                 tipoDeCarteira
         );
-        return carteira;
     }
 }

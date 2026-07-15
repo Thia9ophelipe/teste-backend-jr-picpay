@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
-public record TransacaoRequestDTO(
-
+public record TransacaoRequestDTO(@NotNull BigDecimal valor,
+                                  @NotNull Long idPagador,
+                                  @NotNull Long idRecebedor){
+    public TransacaoRequestDTO(BigDecimal valor, Long idPagador, Long idRecebedor) {
         this.valor = valor;
         this.idPagador = idPagador;
         this.idRecebedor = idRecebedor;
@@ -18,10 +20,12 @@ public record TransacaoRequestDTO(
     }
 
     @Override
+    public Long idPagador() {
         return idPagador;
     }
 
     @Override
+    public Long idRecebedor() {
         return idRecebedor;
     }
 }

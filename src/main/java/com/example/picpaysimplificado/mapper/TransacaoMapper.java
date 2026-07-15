@@ -39,6 +39,7 @@ public class TransacaoMapper {
         Carteira recebedor = carteiraRepository.findById(transacao.getIdRecebedor().getId())
                 .orElseThrow();
 
+        return new TransacaoResponseDTO(
                 transacao.getValor(),
                 pagador,
                 recebedor,

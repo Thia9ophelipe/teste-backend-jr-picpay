@@ -2,7 +2,6 @@ package com.example.picpaysimplificado.config;
 
 
 import com.example.picpaysimplificado.entity.EnumTipoDeCarteira;
-import com.example.picpaysimplificado.entity.TipoDeCarteira;
 import com.example.picpaysimplificado.repository.TipoDeCarteiraRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
