@@ -2,23 +2,22 @@
 
 ## Visão Geral
 
-Esta aplicação consiste em uma API REST desenvolvida em Java utilizando Spring Boot, criada como solução para um desafio de desenvolvimento backend.
+Esta aplicação consiste em uma API REST desenvolvida em Java 21 utilizando Spring Boot, criada como solução para um desafio de desenvolvimento backend.
 
-O projeto tem como objetivo implementar uma API responsável pelo gerenciamento de carteiras e realização de transações financeiras entre usuários, contemplando diferentes tipos de usuários e regras de negócio relacionadas às transferências.
+O projeto implementa uma versão simplificada de uma plataforma de pagamentos, permitindo trabalhar com usuários, carteiras e transferências financeiras entre usuários.
 
 A aplicação foi desenvolvida com foco em organização, separação de responsabilidades, boas práticas de desenvolvimento backend e utilização dos principais recursos oferecidos pelo ecossistema Spring.
 
-A persistência dos dados é realizada utilizando banco de dados relacional, permitindo que usuários, carteiras e transações sejam armazenados de forma persistente.
+A persistência dos dados é realizada utilizando MySQL, com acesso por meio do Spring Data JPA e Hibernate.
 
 ## Objetivo
 
 O principal objetivo da aplicação é disponibilizar uma estrutura backend capaz de:
 
-- Cadastrar e gerenciar usuários;
-- Diferenciar usuários comuns de lojistas;
-- Criar carteiras associadas aos usuários;
+- Trabalhar com usuários comuns e lojistas;
+- Associar carteiras aos usuários;
 - Realizar transferências entre carteiras;
-- Validar as regras necessárias para uma transação;
+- Validar as regras necessárias para uma transferência;
 - Registrar as transações realizadas;
 - Persistir as informações em banco de dados;
 - Expor os recursos por meio de uma API REST.
@@ -27,18 +26,20 @@ A aplicação foi estruturada de forma que as regras de negócio permaneçam sep
 
 ## Tecnologias Utilizadas
 
-- Java
-- Spring Boot
+- Java 21
+- Spring Boot 4.1.0
 - Spring Web
 - Spring Data JPA
 - Hibernate
 - Gradle
 - MySQL
 - Docker
+- MapStruct
+- Lombok
+- Bean Validation
 - JUnit 5
 - Mockito
-- Bean Validation
-- Lombok
+- OpenFeign
 
 ## Arquitetura
 
@@ -61,9 +62,9 @@ Contém as principais regras de negócio da aplicação.
 
 Nesta camada são realizadas operações como:
 
-- Criação de usuários;
-- Criação e gerenciamento de carteiras;
+- Processamento de usuários e carteiras;
 - Validação das regras de transferência;
+- Verificação das condições necessárias para uma operação;
 - Processamento das transações;
 - Comunicação com os repositórios;
 - Orquestração das operações da aplicação.
@@ -75,14 +76,6 @@ A separação dessas regras permite manter os controllers mais simples e concent
 Responsável pelo acesso aos dados persistidos.
 
 A aplicação utiliza Spring Data JPA para abstrair as operações de persistência e comunicação com o banco de dados.
-
-Entre as responsabilidades estão:
-
-- Consulta de usuários;
-- Consulta de carteiras;
-- Persistência de transações;
-- Atualização dos dados;
-- Busca de informações necessárias para as regras de negócio.
 
 ### Entity
 
@@ -102,6 +95,12 @@ Os DTOs são utilizados para transportar informações entre a API e as demais c
 
 A utilização dessa abordagem evita que as entidades de persistência sejam utilizadas diretamente como objetos de entrada e saída da API, permitindo maior controle sobre os dados expostos.
 
+### Mapper
+
+O projeto utiliza MapStruct para realizar o mapeamento entre objetos de domínio e DTOs.
+
+Essa abordagem reduz código repetitivo e mantém a conversão dos objetos isolada das demais responsabilidades da aplicação.
+
 ### Exception Handler
 
 O tratamento de exceções é centralizado para permitir respostas mais consistentes para situações de erro.
@@ -112,15 +111,15 @@ Dessa forma, erros relacionados às regras de negócio, validações ou processa
 
 ### Usuários
 
-A aplicação permite trabalhar com diferentes tipos de usuários, de acordo com as regras definidas pelo domínio da aplicação.
+A aplicação trabalha com diferentes tipos de usuários, permitindo distinguir usuários comuns de lojistas.
 
-Os usuários possuem informações utilizadas para identificação e autenticação dentro do fluxo de transações.
+Cada usuário possui uma carteira utilizada nas operações financeiras.
 
 ### Carteiras
 
-Cada usuário possui uma carteira utilizada para controlar o saldo disponível para realização das operações financeiras.
+As carteiras representam o saldo financeiro associado a cada usuário.
 
-A carteira também está relacionada ao tipo de usuário, permitindo diferenciar usuários comuns e lojistas.
+O saldo é utilizado durante o processamento das transferências, permitindo verificar se o pagador possui recursos suficientes antes da realização da operação.
 
 ### Transações
 
@@ -128,7 +127,7 @@ As transações representam as transferências de valores entre carteiras.
 
 Uma transação possui informações como:
 
-- Identificação da transação;
+- Identificação;
 - Carteira de origem;
 - Carteira de destino;
 - Valor;
@@ -136,39 +135,98 @@ Uma transação possui informações como:
 
 O valor financeiro é representado utilizando `BigDecimal`, evitando problemas de precisão comuns em operações monetárias realizadas com tipos de ponto flutuante.
 
-## Fluxo de uma Transação
+## Exemplo de Utilização
 
-O fluxo básico de uma transferência pode ser representado da seguinte maneira:
+Um exemplo básico do fluxo de utilização da API pode ser representado da seguinte maneira:
 
 ```text
-Cliente
-   |
-   v
-Controller
-   |
-   v
-Service
-   |
-   +----> Validação das regras de negócio
-   |
-   +----> Consulta carteira de origem
-   |
-   +----> Consulta carteira de destino
-   |
-   +----> Validação do saldo
-   |
-   +----> Processamento da transferência
-   |
-   +----> Registro da transação
-   |
-   v
-Repository
-   |
-   v
-Banco de Dados
+1. Usuário possui uma carteira
+          |
+          v
+2. Cliente solicita uma transferência
+          |
+          v
+3. API valida os dados da operação
+          |
+          v
+4. Service verifica as regras de negócio
+          |
+          v
+5. Saldo do pagador é validado
+          |
+          v
+6. Valor é transferido para o recebedor
+          |
+          v
+7. Transação é registrada no banco
 ```
 
-A camada de serviço é responsável por coordenar esse fluxo e garantir que as regras necessárias sejam verificadas antes da conclusão da operação.
+Esse fluxo mantém a regra de negócio concentrada na camada de serviço, enquanto o controller permanece responsável pela comunicação HTTP.
+
+## Endpoint de Transferência
+
+A operação principal da aplicação é a transferência de valores entre usuários.
+
+### POST `/transfer`
+
+Realiza uma transferência entre duas carteiras.
+
+#### Exemplo de requisição
+
+```http
+POST http://localhost:8080/transfer
+Content-Type: application/json
+```
+
+```json
+{
+  "value": 100.00,
+  "payer": 4,
+  "payee": 15
+}
+```
+
+Nesse exemplo:
+
+- `value` representa o valor da transferência;
+- `payer` representa o usuário que está realizando o pagamento;
+- `payee` representa o usuário que receberá o valor.
+
+#### Exemplo utilizando cURL
+
+```bash
+curl --location 'http://localhost:8080/transfer' --header 'Content-Type: application/json' --data '{
+    "value": 100.00,
+    "payer": 4,
+    "payee": 15
+}'
+```
+
+#### Exemplo de fluxo
+
+Considerando inicialmente:
+
+```text
+Usuário 4
+Saldo: R$ 500,00
+
+Usuário 15
+Saldo: R$ 200,00
+```
+
+Após uma transferência de R$ 100,00:
+
+```text
+Usuário 4
+Saldo: R$ 400,00
+
+Usuário 15
+Saldo: R$ 300,00
+```
+
+A operação também gera o registro correspondente da transferência.
+
+> Os identificadores utilizados no exemplo são ilustrativos e devem ser substituídos pelos IDs existentes no banco de dados da aplicação.
 
 ## Regras de Negócio
 
@@ -176,14 +234,39 @@ A aplicação possui regras relacionadas à realização das transferências.
 
 Entre as principais validações estão:
 
-- Verificação da existência da carteira de origem;
-- Verificação da existência da carteira de destino;
-- Validação do saldo disponível;
-- Validação do valor da transação;
-- Verificação do tipo de usuário envolvido na operação;
-- Validação das condições necessárias para realização da transferência.
+- O valor da transferência deve ser válido;
+- O pagador deve possuir uma carteira;
+- O recebedor deve possuir uma carteira;
+- O pagador deve possuir saldo suficiente;
+- A transferência deve respeitar o tipo de usuário envolvido;
+- A operação deve ser processada de acordo com as regras definidas para o domínio.
 
-As regras de negócio são mantidas na camada de serviço para evitar que responsabilidades sejam concentradas nos controllers.
+### Exemplo — Saldo insuficiente
+
+Supondo:
+
+```text
+Saldo do pagador: R$ 50,00
+Valor da transferência: R$ 100,00
+```
+
+A operação não deve ser concluída, pois o pagador não possui saldo suficiente.
+
+Um cenário desse tipo deve resultar em uma resposta de erro, sem que o saldo das carteiras seja alterado.
+
+### Exemplo — Carteira inexistente
+
+Caso seja informado um usuário que não possua uma carteira válida para a operação, a transferência não deve ser processada.
+
+```json
+{
+  "value": 100.00,
+  "payer": 4,
+  "payee": 9999
+}
+```
+
+Nesse caso, a aplicação deve interromper o processamento e retornar o erro correspondente.
 
 ## Validações
 
@@ -205,7 +288,12 @@ A aplicação utiliza MySQL como banco de dados relacional.
 
 O acesso aos dados é realizado por meio do Spring Data JPA, permitindo trabalhar com as entidades do domínio sem a necessidade de implementar manualmente as operações básicas de persistência.
 
-A estrutura também permite que o banco seja executado por meio do Docker, facilitando a configuração do ambiente de desenvolvimento.
+As principais informações persistidas estão relacionadas a:
+
+- Usuários;
+- Tipos de carteira;
+- Carteiras;
+- Transferências.
 
 ## Docker
 
@@ -213,11 +301,29 @@ O projeto possui configuração para execução do banco de dados utilizando Doc
 
 Dessa forma, o ambiente necessário para execução da aplicação pode ser configurado sem a necessidade de realizar manualmente a instalação e configuração do banco de dados no sistema operacional.
 
-O Docker também facilita a reprodução do ambiente em diferentes máquinas.
+### Exemplo
+
+Com o Docker configurado, o banco pode ser iniciado utilizando:
+
+```bash
+docker compose up -d
+```
+
+Para verificar os containers em execução:
+
+```bash
+docker ps
+```
+
+Para interromper os containers:
+
+```bash
+docker compose down
+```
 
 ## Testes
 
-O projeto utiliza JUnit 5 e Mockito para desenvolvimento dos testes automatizados.
+O projeto utiliza JUnit 5 e recursos do ecossistema Spring para desenvolvimento dos testes automatizados.
 
 Os testes têm como objetivo verificar o comportamento das principais partes da aplicação e garantir que as regras implementadas continuem funcionando conforme esperado.
 
@@ -229,6 +335,22 @@ Entre os cenários considerados estão:
 - Validação das regras de negócio;
 - Tratamento de situações inválidas;
 - Comportamentos esperados dos serviços.
+
+### Executando os testes
+
+Utilizando o Gradle Wrapper:
+
+No Windows:
+
+```bash
+gradlew test
+```
+
+No Linux/macOS:
+
+```bash
+./gradlew test
+```
 
 ## Tratamento de Exceções
 
@@ -245,16 +367,31 @@ Entre os possíveis cenários estão:
 
 Essa abordagem evita que cada controller precise implementar individualmente o tratamento das mesmas situações.
 
+### Exemplo de erro
+
+Uma tentativa de transferência com dados inválidos pode resultar em uma resposta HTTP de erro contendo informações sobre o problema encontrado.
+
+```json
+{
+  "status": 400,
+  "message": "Dados da requisição inválidos."
+}
+```
+
+A estrutura exata da resposta depende da exceção gerada durante o processamento.
+
 ## Como Executar
 
 ### Pré-requisitos
 
 Para executar o projeto, é necessário possuir:
 
-- Java instalado;
-- Gradle ou utilização do Gradle Wrapper;
+- Java 21;
 - Docker;
-- Docker Compose, caso seja utilizado o arquivo de composição disponibilizado no projeto.
+- Docker Compose;
+- Git.
+
+O projeto utiliza Gradle Wrapper, portanto não é necessário instalar o Gradle separadamente.
 
 ### Clonando o projeto
 
@@ -269,8 +406,6 @@ cd teste-backend-jr-picpay
 ```
 
 ### Executando o banco de dados
-
-Caso esteja utilizando a configuração Docker do projeto:
 
 ```bash
 docker compose up -d
@@ -290,15 +425,46 @@ No Linux/macOS:
 ./gradlew bootRun
 ```
 
-A aplicação será iniciada conforme as configurações definidas no projeto.
+Após a inicialização, a API estará disponível no endereço configurado pela aplicação, normalmente:
+
+```text
+http://localhost:8080
+```
 
 ## Documentação da API
 
-A API pode ser documentada utilizando ferramentas de documentação compatíveis com OpenAPI/Swagger, quando habilitadas no ambiente da aplicação.
+A documentação da API pode ser disponibilizada por meio de ferramentas compatíveis com OpenAPI/Swagger, quando habilitadas no ambiente da aplicação.
 
 A documentação interativa permite consultar os recursos disponíveis, seus parâmetros, modelos de dados e respostas HTTP.
 
-Quando a interface Swagger estiver habilitada, ela poderá ser acessada pelo navegador utilizando a URL disponibilizada pela aplicação.
+Além da documentação interativa, os exemplos deste README podem ser utilizados para testar a API utilizando ferramentas como cURL, Postman ou Insomnia.
+
+## Exemplo de Teste Manual
+
+Depois de iniciar a aplicação e o banco de dados, um fluxo simples de teste pode ser:
+
+### 1. Verificar os dados disponíveis
+
+Utilize os usuários/carteiras existentes no banco de dados ou os dados carregados pela aplicação.
+
+### 2. Realizar uma transferência
+
+```bash
+curl --location 'http://localhost:8080/transfer' --header 'Content-Type: application/json' --data '{
+    "value": 50.00,
+    "payer": 1,
+    "payee": 2
+}'
+```
+
+### 3. Verificar o resultado
+
+A operação deve validar as regras de negócio e, caso esteja tudo correto:
+
+- Debitar o valor da carteira do pagador;
+- Creditar o valor na carteira do recebedor;
+- Registrar a transação;
+- Retornar a resposta correspondente à operação.
 
 ## Estrutura do Projeto
 
@@ -309,13 +475,15 @@ src
 └── main
     └── java
         └── com
-            └── ...
-                ├── controller
-                ├── service
-                ├── repository
-                ├── entity
-                ├── dto
-                └── exception
+            └── example
+                └── picpaysimplificado
+                    ├── controller
+                    ├── service
+                    ├── repository
+                    ├── entity
+                    ├── dto
+                    ├── mapper
+                    └── exception
 ```
 
 A estrutura permite que cada camada tenha uma responsabilidade específica, facilitando a manutenção e evolução do código.
@@ -331,11 +499,13 @@ Durante o desenvolvimento deste projeto foram aplicados diversos conceitos relac
 - Hibernate;
 - Persistência em banco de dados relacional;
 - DTOs;
+- MapStruct;
 - Validação de dados;
 - Tratamento de exceções;
-- Testes unitários com JUnit e Mockito;
+- Testes automatizados;
 - Utilização de `BigDecimal` para operações financeiras;
 - Containerização com Docker;
+- Integração com serviços externos;
 - Organização de código seguindo princípios de responsabilidade única e separação de responsabilidades.
 
 ## Considerações Finais
@@ -344,6 +514,6 @@ Este projeto foi desenvolvido como parte de um desafio técnico para consolidar 
 
 A implementação busca aplicar conceitos utilizados em aplicações reais, mantendo as responsabilidades separadas entre as camadas de apresentação, negócio e persistência.
 
-Além de atender às funcionalidades propostas pelo desafio, o projeto serviu como oportunidade para praticar conceitos importantes relacionados a APIs REST, persistência de dados, regras de negócio, testes automatizados e organização de aplicações backend.
+Além de atender às funcionalidades propostas pelo desafio, o projeto serviu como oportunidade para praticar conceitos importantes relacionados a APIs REST, persistência de dados, regras de negócio, testes automatizados, integração com serviços externos e organização de aplicações backend.
 
 A estrutura adotada também permite que a aplicação continue evoluindo, possibilitando a inclusão de novas funcionalidades e melhorias sem comprometer a organização das responsabilidades existentes.
